@@ -90,7 +90,15 @@ export const AddWidgetModal = ({ isOpen, onClose }: AddWidgetModalProps) => {
           Object.keys(obj).forEach(key => {
             const fieldPath = prefix ? `${prefix}.${key}` : key;
             if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
-              traverse(obj[key], fieldPath);
+              // For nested objects like "Time Series (Daily)", try to get sample fields from first entry
+              const firstValue = Object.values(obj[key])[0];
+              if (typeof firstValue === 'object' && firstValue !== null) {
+                Object.keys(firstValue as any).forEach(subKey => {
+                  fields.push(`${fieldPath}.*.${subKey}`);
+                });
+              } else {
+                traverse(obj[key], fieldPath);
+              }
             } else {
               fields.push(fieldPath);
             }
@@ -100,7 +108,15 @@ export const AddWidgetModal = ({ isOpen, onClose }: AddWidgetModalProps) => {
     };
     
     traverse(data);
-    return fields.filter((field, index) => fields.indexOf(field) === index).slice(0, 20);
+    
+    // Filter out metadata fields for financial APIs and prioritize time series data
+    const filteredFields = fields.filter((field, index) => fields.indexOf(field) === index);
+    const timeSeriesFields = filteredFields.filter(f => f.includes('Time Series') || f.includes('*.'));
+    const otherFields = filteredFields.filter(f => !f.includes('Time Series') && !f.includes('Meta Data'));
+    const metaFields = filteredFields.filter(f => f.includes('Meta Data'));
+    
+    // Prioritize: time series data > other data > metadata
+    return [...timeSeriesFields, ...otherFields, ...metaFields].slice(0, 20);
   };
 
   const handleSubmit = () => {

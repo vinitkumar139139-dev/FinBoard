@@ -12,16 +12,35 @@ interface WidgetTableViewProps {
 
 export const WidgetTableView = ({ data, fields, title, displayMode = 'table' }: WidgetTableViewProps) => {
   const tableData = useMemo(() => {
+    console.log('WidgetTableView - data:', data);
+    console.log('WidgetTableView - fields:', fields);
     if (!data) return [];
-
-    const getValue = (obj: any, path: string): any => {
-      return path.split('.').reduce((curr, key) => curr?.[key], obj);
-    };
 
     // Handle different data structures
     if (Array.isArray(data)) {
       return data.slice(0, 10); // Limit to 10 rows
     } else if (typeof data === 'object') {
+      // Check if we have time series data (like Alpha Vantage format)
+      const hasTimeSeriesFields = fields.some(f => f.includes('*.'));
+      if (hasTimeSeriesFields) {
+        // Find time series object (usually contains dates as keys)
+        const timeSeriesKey = Object.keys(data).find(key => 
+          typeof data[key] === 'object' && 
+          !Array.isArray(data[key]) &&
+          Object.keys(data[key]).some(subKey => /\d{4}-\d{2}-\d{2}/.test(subKey)) // Look for date patterns
+        );
+        
+        if (timeSeriesKey && data[timeSeriesKey]) {
+          // Convert time series data to array format
+          return Object.entries(data[timeSeriesKey])
+            .slice(0, 10)
+            .map(([date, values]) => ({
+              date,
+              ...values
+            }));
+        }
+      }
+      
       // If data is an object, try to find arrays within it
       const arrays = Object.values(data).filter(Array.isArray);
       if (arrays.length > 0) {
@@ -33,7 +52,7 @@ export const WidgetTableView = ({ data, fields, title, displayMode = 'table' }: 
     }
     
     return [];
-  }, [data]);
+  }, [data, fields]);
 
   const displayFields = useMemo(() => {
     if (fields.length === 0) return [];
@@ -41,7 +60,20 @@ export const WidgetTableView = ({ data, fields, title, displayMode = 'table' }: 
   }, [fields]);
 
   const getValue = (obj: any, path: string): any => {
-    const value = path.split('.').reduce((curr, key) => curr?.[key], obj);
+    let value;
+    
+    // Handle wildcard paths (e.g., "Time Series (Daily).*.1. open")
+    if (path.includes('*.')) {
+      const parts = path.split('*.');
+      if (parts.length === 2) {
+        const fieldName = parts[1]; // e.g., "1. open"
+        value = obj[fieldName];
+      }
+    } else {
+      // Handle regular dot notation
+      value = path.split('.').reduce((curr, key) => curr?.[key], obj);
+    }
+    
     if (typeof value === 'number') {
       return value.toLocaleString();
     }

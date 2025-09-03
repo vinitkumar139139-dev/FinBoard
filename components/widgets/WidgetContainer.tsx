@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode, useState } from 'react';
-import { X, MoreVertical, RefreshCw, Settings } from 'lucide-react';
+import { X, MoreVertical, RefreshCw, Settings, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useDashboardStore } from '@/stores/dashboardStore';
 import { useApiData } from '@/hooks/useApiData';
