@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface WidgetChartViewProps {
   data: any;
@@ -13,23 +13,8 @@ export const WidgetChartView = ({ data, fields, title }: WidgetChartViewProps) =
   const chartData = useMemo(() => {
     if (!data) return [];
 
-    const getValue = (obj: any, path: string): any => {
-      return path.split('.').reduce((curr, key) => curr?.[key], obj);
-    };
-
-    // Handle different data structures
-    if (Array.isArray(data)) {
-      return data.slice(0, 20).map((item, index) => {
-        const chartPoint: any = { index };
-        fields.forEach(field => {
-          const value = getValue(item, field);
-          if (typeof value === 'number') {
-            chartPoint[field] = value;
-          }
-        });
-        return chartPoint;
-      });
-    } else if (typeof data === 'object') {
+    // Handle time series data (like Alpha Vantage format)
+    if (typeof data === 'object') {
       // Check if we have time series data (like Alpha Vantage format)
       const hasTimeSeriesFields = fields.some(f => f.includes('*.'));
       if (hasTimeSeriesFields) {
@@ -43,17 +28,28 @@ export const WidgetChartView = ({ data, fields, title }: WidgetChartViewProps) =
         if (timeSeriesKey && data[timeSeriesKey]) {
           // Convert time series data to chart format
           return Object.entries(data[timeSeriesKey])
-            .slice(0, 20)
-            .map(([date, values]: [string, any]) => ({
-              date,
-              ...values,
-              timestamp: new Date(date).getTime()
-            }))
-            .sort((a, b) => a.timestamp - b.timestamp);
+            .slice(0, 30)
+            .reverse() // Reverse to show oldest to newest
+            .map(([date, values]: [string, any]) => {
+              const entry: any = {
+                date: date,
+                formattedDate: new Date(date).toLocaleDateString(),
+                timestamp: new Date(date).getTime()
+              };
+              
+              // Convert string values to numbers for charting
+              if (values['1. open']) entry.open = parseFloat(values['1. open']);
+              if (values['2. high']) entry.high = parseFloat(values['2. high']);
+              if (values['3. low']) entry.low = parseFloat(values['3. low']);
+              if (values['4. close']) entry.close = parseFloat(values['4. close']);
+              if (values['5. volume']) entry.volume = parseInt(values['5. volume']);
+              
+              return entry;
+            });
         }
       }
       
-      // Try to find time series data using key names
+      // Fallback: Try to find time series data using key names
       const timeSeriesKeys = Object.keys(data).filter(key => 
         key.toLowerCase().includes('time') || 
         key.toLowerCase().includes('series') ||
@@ -65,99 +61,54 @@ export const WidgetChartView = ({ data, fields, title }: WidgetChartViewProps) =
         const timeSeriesData = data[timeSeriesKeys[0]];
         if (typeof timeSeriesData === 'object') {
           return Object.entries(timeSeriesData)
-            .slice(0, 20)
+            .slice(0, 30)
+            .reverse()
             .map(([date, values]: [string, any]) => ({
               date,
+              formattedDate: new Date(date).toLocaleDateString(),
               ...values,
               timestamp: new Date(date).getTime()
-            }))
-            .sort((a, b) => a.timestamp - b.timestamp);
+            }));
         }
       }
-      
-      // Convert single object to chart data
-      const numericFields = fields.filter(field => {
-        const value = getValue(data, field);
-        return typeof value === 'number';
-      });
-      
-      return numericFields.map(field => ({
-        name: field.split('.').pop()?.replace(/([A-Z])/g, ' $1') || field,
-        value: getValue(data, field)
-      }));
     }
     
     return [];
   }, [data, fields]);
 
-  const numericFields = useMemo(() => {
-    if (chartData.length === 0) return [];
-    
+  // Determine if we have OHLC data for candlestick chart
+  const hasOHLCData = useMemo(() => {
+    if (chartData.length === 0) return false;
     const firstItem = chartData[0];
-    return Object.keys(firstItem).filter(key => 
-      key !== 'index' && 
-      key !== 'date' && 
-      key !== 'timestamp' && 
-      key !== 'name' &&
-      typeof firstItem[key] === 'number'
-    );
+    return firstItem.open && firstItem.high && firstItem.low && firstItem.close;
   }, [chartData]);
 
   if (chartData.length === 0) {
     return (
       <div className="text-center py-8 text-slate-400">
-        No numeric data available for chart
-      </div>
-    );
-  }
-
-  // Determine chart type based on data structure
-  const isTimeSeries = chartData.some(item => item.date || item.timestamp);
-  const isBarData = chartData.some(item => item.name && item.value);
-
-  if (isBarData && !isTimeSeries) {
-    return (
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis 
-              dataKey="name" 
-              stroke="#9CA3AF"
-              fontSize={12}
-            />
-            <YAxis 
-              stroke="#9CA3AF"
-              fontSize={12}
-            />
-            <Tooltip 
-              contentStyle={{
-                backgroundColor: '#1F2937',
-                border: '1px solid #374151',
-                borderRadius: '6px',
-                color: '#F3F4F6'
-              }}
-            />
-            <Bar dataKey="value" fill="#3B82F6" />
-          </BarChart>
-        </ResponsiveContainer>
+        No time series data available for chart
       </div>
     );
   }
 
   return (
-    <div className="h-64">
+    <div className="h-80">
+      <div className="mb-2 text-xs text-slate-400">
+        {hasOHLCData ? 'Stock Price Chart (OHLC Data)' : 'Price Line Chart'}
+      </div>
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData}>
+        <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
           <XAxis 
-            dataKey={isTimeSeries ? "date" : "index"}
+            dataKey="formattedDate"
             stroke="#9CA3AF"
-            fontSize={12}
+            fontSize={10}
+            interval="preserveStartEnd"
           />
           <YAxis 
             stroke="#9CA3AF"
             fontSize={12}
+            domain={['dataMin - 5', 'dataMax + 5']}
           />
           <Tooltip 
             contentStyle={{
@@ -166,17 +117,61 @@ export const WidgetChartView = ({ data, fields, title }: WidgetChartViewProps) =
               borderRadius: '6px',
               color: '#F3F4F6'
             }}
+            formatter={(value: any, name: string) => {
+              if (name === 'volume') return [parseInt(value)?.toLocaleString(), 'Volume'];
+              return [parseFloat(value)?.toFixed(2), name.toUpperCase()];
+            }}
+            labelFormatter={(label) => `Date: ${label}`}
           />
-          {numericFields.slice(0, 3).map((field, index) => (
+          
+          {/* Close Price Line - Main line */}
+          <Line
+            type="monotone"
+            dataKey="close"
+            stroke="#3B82F6"
+            strokeWidth={3}
+            dot={false}
+            name="close"
+          />
+          
+          {/* High Price Line */}
+          {hasOHLCData && (
             <Line
-              key={field}
               type="monotone"
-              dataKey={field}
-              stroke={['#3B82F6', '#10B981', '#F59E0B'][index]}
-              strokeWidth={2}
+              dataKey="high"
+              stroke="#10B981"
+              strokeWidth={1}
               dot={false}
+              name="high"
+              strokeDasharray="3 3"
             />
-          ))}
+          )}
+          
+          {/* Low Price Line */}
+          {hasOHLCData && (
+            <Line
+              type="monotone"
+              dataKey="low"
+              stroke="#EF4444"
+              strokeWidth={1}
+              dot={false}
+              name="low"
+              strokeDasharray="3 3"
+            />
+          )}
+          
+          {/* Open Price Line */}
+          {hasOHLCData && (
+            <Line
+              type="monotone"
+              dataKey="open"
+              stroke="#F59E0B"
+              strokeWidth={1}
+              dot={false}
+              name="open"
+              strokeDasharray="5 5"
+            />
+          )}
         </LineChart>
       </ResponsiveContainer>
     </div>
