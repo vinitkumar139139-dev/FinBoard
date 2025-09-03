@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Bell, Settings, RefreshCw } from 'lucide-react';
+import { Bell, Settings, RefreshCw, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/components/theme/ThemeProvider';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useApiData } from '@/hooks/useApiData';
@@ -10,6 +11,7 @@ import { useDashboardStore } from '@/stores/dashboardStore';
 export const Header = () => {
   const { refreshAllWidgets } = useApiData();
   const widgets = useDashboardStore(state => state.widgets);
+  const { theme, toggleTheme } = useTheme();
   const [currentTime, setCurrentTime] = useState('');
   
   const handleRefreshAll = () => {
@@ -62,10 +64,35 @@ export const Header = () => {
         </div>
 
         <div className="flex items-center space-x-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={toggleTheme}
+            className="text-slate-400 hover:text-white"
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          >
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
           <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
             <Bell className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => {
+              const { exportDashboard } = useDashboardStore.getState();
+              const config = exportDashboard();
+              const blob = new Blob([config], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `finboard-dashboard-${new Date().toISOString().split('T')[0]}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+            className="text-slate-400 hover:text-white"
+            title="Export Dashboard"
+          >
             <Settings className="h-4 w-4" />
           </Button>
         </div>

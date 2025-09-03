@@ -64,7 +64,15 @@ export const Sidebar = () => {
                   <button
                     key={itemIndex}
                     className="w-full text-left p-3 rounded-lg hover:bg-slate-800 transition-colors group"
-                    onClick={() => setIsAddModalOpen(true)}
+                    onClick={() => {
+                      if (category.title === 'TEMPLATES') {
+                        // Load template
+                        const { loadTemplate } = useDashboardStore.getState();
+                        loadTemplate(item.name);
+                      } else {
+                        setIsAddModalOpen(true);
+                      }
+                    }}
                   >
                     <div className="flex items-start space-x-3">
                       <item.icon className="w-5 h-5 text-slate-400 group-hover:text-blue-400 mt-0.5 transition-colors" />

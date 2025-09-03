@@ -117,6 +117,8 @@ export const WidgetGrid = () => {
                                   data={widget.data}
                                   fields={widget.fields}
                                   title={widget.title}
+                                  chartType={widget.chartType || 'line'}
+                                  timeInterval={widget.timeInterval || 'daily'}
                                 />
                               )}
                             </>

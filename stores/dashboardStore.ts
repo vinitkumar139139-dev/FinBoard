@@ -26,6 +26,10 @@ interface DashboardStore {
   reorderWidgets: (widgets: Widget[]) => void;
   setWidgetData: (id: string, data: any, error?: string | null) => void;
   setWidgetLoading: (id: string, loading: boolean) => void;
+  exportDashboard: () => string;
+  importDashboard: (config: string) => boolean;
+  clearDashboard: () => void;
+  loadTemplate: (templateName: string) => void;
 }
 
 export const useDashboardStore = create<DashboardStore>()(
@@ -73,6 +77,70 @@ export const useDashboardStore = create<DashboardStore>()(
           w.id === id ? { ...w, loading } : w
         )
       })),
+
+      exportDashboard: () => {
+        const state = get();
+        const exportData = {
+          version: '1.0',
+          timestamp: new Date().toISOString(),
+          widgets: state.widgets.map(w => ({
+            title: w.title,
+            apiUrl: w.apiUrl,
+            apiHeaders: w.apiHeaders,
+            refreshInterval: w.refreshInterval,
+            fields: w.fields,
+            displayMode: w.displayMode,
+            chartType: w.chartType,
+            timeInterval: w.timeInterval,
+            position: w.position
+          }))
+        };
+        return JSON.stringify(exportData, null, 2);
+      },
+
+      importDashboard: (config) => {
+        try {
+          const importData = JSON.parse(config);
+          if (!importData.widgets || !Array.isArray(importData.widgets)) {
+            throw new Error('Invalid configuration format');
+          }
+          
+          const newWidgets: Widget[] = importData.widgets.map((w: any, index: number) => ({
+            ...w,
+            id: Date.now().toString() + index,
+            data: null,
+            loading: false,
+            error: null,
+            position: index
+          }));
+          
+          set({ widgets: newWidgets });
+          return true;
+        } catch (error) {
+          console.error('Failed to import dashboard:', error);
+          return false;
+        }
+      },
+
+      clearDashboard: () => set({ widgets: [] }),
+
+      loadTemplate: (templateName) => {
+        const { dashboardTemplates } = require('@/lib/templates');
+        const template = dashboardTemplates.find((t: any) => t.name === templateName);
+        
+        if (template) {
+          const newWidgets: Widget[] = template.widgets.map((w: any, index: number) => ({
+            ...w,
+            id: Date.now().toString() + index,
+            data: null,
+            loading: false,
+            error: null,
+            position: index
+          }));
+          
+          set({ widgets: newWidgets });
+        }
+      },
     }),
     {
       name: 'dashboard-store',

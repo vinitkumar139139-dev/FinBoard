@@ -1,15 +1,17 @@
 'use client';
 
 import { useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Bar, Cell } from 'recharts';
 
 interface WidgetChartViewProps {
   data: any;
   fields: string[];
   title: string;
+  chartType?: 'line' | 'candlestick';
+  timeInterval?: 'daily' | 'weekly' | 'monthly';
 }
 
-export const WidgetChartView = ({ data, fields, title }: WidgetChartViewProps) => {
+export const WidgetChartView = ({ data, fields, title, chartType = 'line', timeInterval = 'daily' }: WidgetChartViewProps) => {
   const chartData = useMemo(() => {
     if (!data) return [];
 
@@ -91,10 +93,102 @@ export const WidgetChartView = ({ data, fields, title }: WidgetChartViewProps) =
     );
   }
 
+  // Custom Candlestick Shape Component
+  const CandlestickShape = (props: any) => {
+    const { payload, x, y, width, height } = props;
+    if (!payload || !payload.open || !payload.high || !payload.low || !payload.close) return null;
+    
+    const { open, high, low, close } = payload;
+    const isPositive = close >= open;
+    
+    // Calculate positions and dimensions
+    const candleWidth = Math.max(width * 0.6, 2);
+    const candleX = x + (width - candleWidth) / 2;
+    
+    // Scale calculations (approximate)
+    const minValue = Math.min(...chartData.map(d => d.low));
+    const maxValue = Math.max(...chartData.map(d => d.high));
+    const range = maxValue - minValue;
+    const scale = height / range;
+    
+    const openY = y + height - ((open - minValue) / range) * height;
+    const closeY = y + height - ((close - minValue) / range) * height;
+    const highY = y + height - ((high - minValue) / range) * height;
+    const lowY = y + height - ((low - minValue) / range) * height;
+    
+    const bodyTop = Math.min(openY, closeY);
+    const bodyHeight = Math.abs(openY - closeY);
+    
+    return (
+      <g>
+        {/* High-Low line (wick) */}
+        <line
+          x1={candleX + candleWidth / 2}
+          y1={highY}
+          x2={candleX + candleWidth / 2}
+          y2={lowY}
+          stroke={isPositive ? "#10B981" : "#EF4444"}
+          strokeWidth={1}
+        />
+        {/* Open-Close body */}
+        <rect
+          x={candleX}
+          y={bodyTop}
+          width={candleWidth}
+          height={Math.max(bodyHeight, 1)}
+          fill={isPositive ? "#10B981" : "#EF4444"}
+          stroke={isPositive ? "#10B981" : "#EF4444"}
+          fillOpacity={isPositive ? 0.8 : 1}
+        />
+      </g>
+    );
+  };
+
+  if (chartType === 'candlestick' && hasOHLCData) {
+    return (
+      <div className="h-80">
+        <div className="mb-2 text-xs text-slate-400">
+          Candlestick Chart ({timeInterval.charAt(0).toUpperCase() + timeInterval.slice(1)}) - Green: Price Up, Red: Price Down
+        </div>
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+            <XAxis 
+              dataKey="formattedDate"
+              stroke="#9CA3AF"
+              fontSize={10}
+              interval="preserveStartEnd"
+            />
+            <YAxis 
+              stroke="#9CA3AF"
+              fontSize={12}
+              domain={['dataMin - 5', 'dataMax + 5']}
+            />
+            <Tooltip 
+              contentStyle={{
+                backgroundColor: '#1F2937',
+                border: '1px solid #374151',
+                borderRadius: '6px',
+                color: '#F3F4F6'
+              }}
+              formatter={(value: any, name: string) => {
+                if (name === 'volume') return [parseInt(value)?.toLocaleString(), 'Volume'];
+                return [parseFloat(value)?.toFixed(2), name.toUpperCase()];
+              }}
+              labelFormatter={(label) => `Date: ${label}`}
+            />
+            <Bar dataKey="close" fill="transparent" shape={<CandlestickShape />} />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+
+  // Default Line Chart
   return (
     <div className="h-80">
       <div className="mb-2 text-xs text-slate-400">
-        {hasOHLCData ? 'Stock Price Chart (OHLC Data)' : 'Price Line Chart'}
+        {chartType === 'line' ? `Line Chart (${timeInterval.charAt(0).toUpperCase() + timeInterval.slice(1)})` : 'Stock Price Chart'} - {hasOHLCData ? 'OHLC Data' : 'Price Data'}
       </div>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
