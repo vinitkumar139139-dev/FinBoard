@@ -12,8 +12,6 @@ interface WidgetTableViewProps {
 
 export const WidgetTableView = ({ data, fields, title, displayMode = 'table' }: WidgetTableViewProps) => {
   const tableData = useMemo(() => {
-    console.log('WidgetTableView - data:', data);
-    console.log('WidgetTableView - fields:', fields);
     if (!data) return [];
 
     // Handle different data structures

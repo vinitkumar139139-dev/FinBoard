@@ -33,8 +33,6 @@ export const useApiData = () => {
       
       const data = await response.json();
       
-      console.log('API Response for widget', widgetId, ':', data);
-      
       // Cache the data
       dataCache.set(cacheKey, { data, timestamp: Date.now() });
       
