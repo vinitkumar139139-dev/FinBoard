@@ -22,6 +22,8 @@ export const AddWidgetModal = ({ isOpen, onClose }: AddWidgetModalProps) => {
   const [apiHeaders, setApiHeaders] = useState<Record<string, string>>({});
   const [refreshInterval, setRefreshInterval] = useState(30);
   const [displayMode, setDisplayMode] = useState<'card' | 'table' | 'chart'>('table');
+  const [chartType, setChartType] = useState<'line' | 'candlestick' | 'performance'>('line');
+  const [timeInterval, setTimeInterval] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [testResult, setTestResult] = useState<{ success: boolean; data?: any; error?: string } | null>(null);
   const [testing, setTesting] = useState(false);
   const [availableFields, setAvailableFields] = useState<string[]>([]);
@@ -128,6 +130,8 @@ export const AddWidgetModal = ({ isOpen, onClose }: AddWidgetModalProps) => {
       apiHeaders: Object.keys(apiHeaders).length > 0 ? apiHeaders : undefined,
       refreshInterval,
       displayMode,
+      chartType: displayMode === 'chart' ? chartType : undefined,
+      timeInterval: displayMode === 'chart' ? timeInterval : undefined,
       fields: selectedFields,
     });
     
@@ -140,6 +144,8 @@ export const AddWidgetModal = ({ isOpen, onClose }: AddWidgetModalProps) => {
     setApiHeaders({});
     setRefreshInterval(30);
     setDisplayMode('table');
+    setChartType('line');
+    setTimeInterval('daily');
     setTestResult(null);
     setAvailableFields([]);
     setSelectedFields([]);
@@ -341,6 +347,61 @@ export const AddWidgetModal = ({ isOpen, onClose }: AddWidgetModalProps) => {
               ))}
             </div>
           </div>
+
+          {/* Chart Type (only show when chart mode is selected) */}
+          {displayMode === 'chart' && (
+            <div>
+              <Label className="text-slate-300">Chart Type</Label>
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {[
+                  { value: 'line', label: 'Line Chart', icon: '📈', desc: 'Multi-line price trends' },
+                  { value: 'candlestick', label: 'Candlestick', icon: '🕯️', desc: 'OHLC candlestick view' },
+                  { value: 'performance', label: 'Performance', icon: '📊', desc: 'Key metrics overview' }
+                ].map((type) => (
+                  <button
+                    key={type.value}
+                    onClick={() => setChartType(type.value as any)}
+                    className={`p-3 rounded-md border transition-colors text-center ${
+                      chartType === type.value
+                        ? 'bg-green-600 border-green-500 text-white'
+                        : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+                    }`}
+                  >
+                    <div className="text-lg mb-1">{type.icon}</div>
+                    <div className="text-xs font-medium">{type.label}</div>
+                    <div className="text-xs text-slate-400 mt-1">{type.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Time Interval (only show for chart mode) */}
+          {displayMode === 'chart' && (
+            <div>
+              <Label className="text-slate-300">Time Interval</Label>
+              <div className="mt-2 flex space-x-2">
+                {[
+                  { value: 'daily', label: 'Daily', desc: 'Daily stock data' },
+                  { value: 'weekly', label: 'Weekly', desc: 'Weekly aggregated' },
+                  { value: 'monthly', label: 'Monthly', desc: 'Monthly trends' }
+                ].map((interval) => (
+                  <button
+                    key={interval.value}
+                    onClick={() => setTimeInterval(interval.value as any)}
+                    className={`flex-1 p-3 rounded-md border transition-colors ${
+                      timeInterval === interval.value
+                        ? 'bg-purple-600 border-purple-500 text-white'
+                        : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+                    }`}
+                  >
+                    <div className="text-sm font-medium">{interval.label}</div>
+                    <div className="text-xs text-slate-400 mt-1">{interval.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {availableFields.length > 0 && (
             <div>

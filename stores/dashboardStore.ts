@@ -9,6 +9,8 @@ export interface Widget {
   refreshInterval: number; // in seconds
   fields: string[];
   displayMode: 'card' | 'table' | 'chart';
+  chartType?: 'line' | 'candlestick' | 'performance';
+  timeInterval?: 'daily' | 'weekly' | 'monthly';
   data: any;
   loading: boolean;
   error: string | null;

@@ -12,9 +12,9 @@ const widgetCategories = [
       { name: 'Stock Table', description: 'Paginated stock data', icon: BarChart3 },
       { name: 'Watchlist Card', description: 'Your tracked stocks', icon: Target },
       { name: 'Market Gainers', description: 'Top performing stocks', icon: TrendingUp },
-      { name: 'Line Chart', description: 'Price trend analysis', icon: Activity },
-      { name: 'Candlestick Chart', description: 'OHLC price data', icon: BarChart3 },
-      { name: 'Performance Metrics', description: 'Portfolio analytics', icon: PieChart },
+      { name: 'Line Chart', description: 'Price trend analysis', icon: Activity, type: 'line_chart' },
+      { name: 'Candlestick Chart', description: 'OHLC price data', icon: BarChart3, type: 'candlestick_chart' },
+      { name: 'Performance Metrics', description: 'Portfolio analytics', icon: PieChart, type: 'performance_metrics' },
     ]
   },
   {

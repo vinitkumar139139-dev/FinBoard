@@ -8,6 +8,7 @@ import { WidgetContainer } from '@/components/widgets/WidgetContainer';
 import { WidgetTableView } from '@/components/widgets/WidgetTableView';
 import { WidgetCardView } from '@/components/widgets/WidgetCardView';
 import { WidgetChartView } from '@/components/widgets/WidgetChartView';
+import { WidgetPerformanceView } from '@/components/widgets/WidgetPerformanceView';
 import { useDashboardStore } from '@/stores/dashboardStore';
 import { AddWidgetModal } from '@/components/widgets/AddWidgetModal';
 
@@ -104,11 +105,21 @@ export const WidgetGrid = () => {
                               title={widget.title}
                             />
                           ) : widget.displayMode === 'chart' ? (
-                            <WidgetChartView
-                              data={widget.data}
-                              fields={widget.fields}
-                              title={widget.title}
-                            />
+                            <>
+                              {widget.chartType === 'performance' ? (
+                                <WidgetPerformanceView
+                                  data={widget.data}
+                                  fields={widget.fields}
+                                  title={widget.title}
+                                />
+                              ) : (
+                                <WidgetChartView
+                                  data={widget.data}
+                                  fields={widget.fields}
+                                  title={widget.title}
+                                />
+                              )}
+                            </>
                           ) : (
                             <WidgetTableView
                               data={widget.data}
