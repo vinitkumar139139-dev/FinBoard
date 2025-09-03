@@ -47,20 +47,52 @@ export const WidgetCardView = ({ data, fields, title }: WidgetCardViewProps) => 
     if (Array.isArray(data)) {
       sourceData = data[0] || {};
     } else if (typeof data === 'object') {
-      // Try to find the most relevant object
-      const keys = Object.keys(data);
-      const dataKey = keys.find(key => 
-        key.toLowerCase().includes('data') || 
-        key.toLowerCase().includes('quote') ||
-        key.toLowerCase().includes('price')
-      );
-      if (dataKey && typeof data[dataKey] === 'object') {
-        sourceData = data[dataKey];
+      // Check if we have time series data (like Alpha Vantage format)
+      const hasTimeSeriesFields = fields.some(f => f.includes('*.'));
+      if (hasTimeSeriesFields) {
+        // Find time series object (usually contains dates as keys)
+        const timeSeriesKey = Object.keys(data).find(key => 
+          typeof data[key] === 'object' && 
+          !Array.isArray(data[key]) &&
+          Object.keys(data[key]).some(subKey => /\d{4}-\d{2}-\d{2}/.test(subKey)) // Look for date patterns
+        );
+        
+        if (timeSeriesKey && data[timeSeriesKey]) {
+          // Get the latest time series entry (first date entry)
+          const latestDate = Object.keys(data[timeSeriesKey])[0];
+          sourceData = {
+            date: latestDate,
+            ...data[timeSeriesKey][latestDate]
+          };
+        }
+      } else {
+        // Try to find the most relevant object
+        const keys = Object.keys(data);
+        const dataKey = keys.find(key => 
+          key.toLowerCase().includes('data') || 
+          key.toLowerCase().includes('quote') ||
+          key.toLowerCase().includes('price')
+        );
+        if (dataKey && typeof data[dataKey] === 'object') {
+          sourceData = data[dataKey];
+        }
       }
     }
 
     return fields.slice(0, 8).map(field => {
-      const value = getValue(sourceData, field);
+      let value;
+      
+      // Handle wildcard paths (e.g., "Time Series (Daily).*.1. open")
+      if (field.includes('*.')) {
+        const parts = field.split('*.');
+        if (parts.length === 2) {
+          const fieldName = parts[1]; // e.g., "1. open"
+          value = sourceData[fieldName];
+        }
+      } else {
+        value = getValue(sourceData, field);
+      }
+      
       const formatted = formatValue(value, field);
       return {
         label: formatLabel(field),

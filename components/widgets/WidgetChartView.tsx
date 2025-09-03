@@ -30,7 +30,30 @@ export const WidgetChartView = ({ data, fields, title }: WidgetChartViewProps) =
         return chartPoint;
       });
     } else if (typeof data === 'object') {
-      // Try to find time series data
+      // Check if we have time series data (like Alpha Vantage format)
+      const hasTimeSeriesFields = fields.some(f => f.includes('*.'));
+      if (hasTimeSeriesFields) {
+        // Find time series object (usually contains dates as keys)
+        const timeSeriesKey = Object.keys(data).find(key => 
+          typeof data[key] === 'object' && 
+          !Array.isArray(data[key]) &&
+          Object.keys(data[key]).some(subKey => /\d{4}-\d{2}-\d{2}/.test(subKey)) // Look for date patterns
+        );
+        
+        if (timeSeriesKey && data[timeSeriesKey]) {
+          // Convert time series data to chart format
+          return Object.entries(data[timeSeriesKey])
+            .slice(0, 20)
+            .map(([date, values]: [string, any]) => ({
+              date,
+              ...values,
+              timestamp: new Date(date).getTime()
+            }))
+            .sort((a, b) => a.timestamp - b.timestamp);
+        }
+      }
+      
+      // Try to find time series data using key names
       const timeSeriesKeys = Object.keys(data).filter(key => 
         key.toLowerCase().includes('time') || 
         key.toLowerCase().includes('series') ||

@@ -34,7 +34,7 @@ export const WidgetTableView = ({ data, fields, title, displayMode = 'table' }: 
             .slice(0, 10)
             .map(([date, values]) => ({
               date,
-              ...values
+              ...(values as object)
             }));
         }
       }
