@@ -24,10 +24,10 @@ export const Header = () => {
     setCurrentTime(new Date().toLocaleTimeString());
   }, []);
   return (
-    <header className="bg-card border-b border-border px-6 py-4 flex items-center justify-between">
+    <header className="bg-card border-b border-border px-4 md:px-6 py-4 flex items-center justify-between">
       <div className="flex items-center space-x-4">
         <div>
-          <h1 className="text-xl font-bold text-foreground">My Trading Dashboard</h1>
+          <h1 className="text-xl font-bold text-foreground">Finance</h1>
           <div className="flex items-center space-x-4 mt-1">
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>

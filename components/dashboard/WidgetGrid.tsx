@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Button } from '@/components/ui/button';
@@ -33,11 +33,11 @@ export const WidgetGrid = () => {
 
   if (!mounted) {
     return (
-      <div className="flex-1 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="flex-1 p-4 md:p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6">
           {/* Loading skeleton */}
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-slate-800 rounded-lg h-64 animate-pulse"></div>
+            <div key={i} className="bg-muted rounded-lg h-64 animate-pulse"></div>
           ))}
         </div>
       </div>
@@ -48,11 +48,11 @@ export const WidgetGrid = () => {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
-          <h3 className="text-xl text-slate-400 mb-2">Your dashboard is empty</h3>
-          <p className="text-slate-500 mb-6">Drag widgets from the sidebar to get started</p>
+          <h3 className="text-xl text-muted-foreground mb-2">Your dashboard is empty</h3>
+          <p className="text-muted-foreground/70 mb-6">Drag widgets from the sidebar to get started</p>
           <Button
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Your First Widget
@@ -68,14 +68,14 @@ export const WidgetGrid = () => {
   }
 
   return (
-    <div className="flex-1 p-6">
+    <div className="flex-1 p-4 md:p-6">
       <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="widgets" direction="horizontal">
+        <Droppable droppableId="widgets">
           {(provided) => (
             <div
               {...provided.droppableProps}
               ref={provided.innerRef}
-              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+              className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6"
             >
               {widgets
                 .sort((a, b) => a.position - b.position)
@@ -144,13 +144,13 @@ export const WidgetGrid = () => {
               
               {/* Add Widget Card */}
               <div
-                className="border-2 border-dashed border-slate-700 rounded-lg p-8 flex items-center justify-center hover:border-slate-600 transition-colors cursor-pointer"
+                className="border-2 border-dashed border-border rounded-lg p-6 md:p-8 flex items-center justify-center hover:border-muted-foreground/40 transition-colors cursor-pointer"
                 onClick={() => setIsAddModalOpen(true)}
               >
                 <div className="text-center">
-                  <Plus className="h-8 w-8 text-slate-500 mx-auto mb-2" />
-                  <p className="text-slate-400 font-medium">Add Widget</p>
-                  <p className="text-xs text-slate-600 mt-1">
+                  <Plus className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-foreground font-medium">Add Widget</p>
+                  <p className="text-xs text-muted-foreground mt-1">
                     Connect to a finance API and create a custom widget
                   </p>
                 </div>

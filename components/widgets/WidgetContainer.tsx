@@ -58,15 +58,15 @@ export const WidgetContainer = ({
   };
 
   return (
-    <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden hover:border-slate-600 transition-colors group">
-      <div className="flex items-center justify-between p-4 border-b border-slate-700">
+    <div className="bg-card rounded-lg border border-border overflow-hidden hover:border-muted-foreground/20 transition-colors group">
+      <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex-1">
-          <h3 className="text-white font-medium">{title}</h3>
+          <h3 className="text-foreground font-medium">{title}</h3>
           {description && (
-            <p className="text-xs text-slate-400 mt-1">{description}</p>
+            <p className="text-xs text-muted-foreground mt-1">{description}</p>
           )}
           {lastUpdated && (
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-muted-foreground/70 mt-1">
               Updated {formatLastUpdated()}
             </p>
           )}
@@ -79,7 +79,7 @@ export const WidgetContainer = ({
               size="sm"
               onClick={handleRefresh}
               disabled={loading}
-              className="text-slate-400 hover:text-white h-8 w-8 p-0"
+              className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
@@ -90,16 +90,16 @@ export const WidgetContainer = ({
               variant="ghost"
               size="sm"
               onClick={() => setShowMenu(!showMenu)}
-              className="text-slate-400 hover:text-white h-8 w-8 p-0"
+              className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
             >
               <MoreVertical className="h-4 w-4" />
             </Button>
             
             {showMenu && (
-              <div className="absolute right-0 top-8 bg-slate-800 border border-slate-700 rounded-md py-1 min-w-[180px] z-10">
+              <div className="absolute right-0 top-8 bg-popover border border-border rounded-md py-1 min-w-[180px] z-10 shadow-lg">
                 <button
                   onClick={handleRefresh}
-                  className="w-full text-left px-3 py-2 text-sm text-slate-300 hover:bg-slate-700 flex items-center"
+                  className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-accent flex items-center"
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Refresh
@@ -107,22 +107,22 @@ export const WidgetContainer = ({
                 
                 {apiEndpoints && apiEndpoints.length > 1 && (
                   <>
-                    <div className="px-3 py-1 text-xs text-slate-500 border-t border-slate-700 mt-1">
+                    <div className="px-3 py-1 text-xs text-muted-foreground border-t border-border mt-1">
                       Switch Endpoint
                     </div>
                     {apiEndpoints.map((endpoint, index) => (
                       <button
                         key={index}
                         onClick={() => switchWidgetEndpoint(id, index)}
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-slate-700 flex items-center ${
-                          index === currentEndpointIndex ? 'text-blue-400' : 'text-slate-300'
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-accent flex items-center ${
+                          index === currentEndpointIndex ? 'text-primary' : 'text-foreground'
                         }`}
                       >
                         <Globe className="h-4 w-4 mr-2" />
                         <div>
                           <div className="font-medium">{endpoint.name}</div>
                           {endpoint.description && (
-                            <div className="text-xs text-slate-500">{endpoint.description}</div>
+                            <div className="text-xs text-muted-foreground">{endpoint.description}</div>
                           )}
                         </div>
                       </button>
@@ -132,7 +132,7 @@ export const WidgetContainer = ({
                 
                 <button
                   onClick={handleDelete}
-                  className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-slate-700 flex items-center border-t border-slate-700 mt-1"
+                  className="w-full text-left px-3 py-2 text-sm text-destructive hover:bg-accent flex items-center border-t border-border mt-1"
                 >
                   <X className="h-4 w-4 mr-2" />
                   Delete
@@ -146,15 +146,15 @@ export const WidgetContainer = ({
       <div className="p-4">
         {loading && (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin w-8 h-8 border border-slate-600 border-t-blue-500 rounded-full"></div>
+            <div className="animate-spin w-8 h-8 border border-muted border-t-primary rounded-full"></div>
           </div>
         )}
         
         {error && (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
-              <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
-              <p className="text-red-400 text-sm">{error}</p>
+              <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
+              <p className="text-destructive text-sm">{error}</p>
             </div>
           </div>
         )}
