@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Bell, Settings, RefreshCw, Sun, Moon } from 'lucide-react';
+import { Bell, Settings, RefreshCw, Sun, Moon, Download } from 'lucide-react';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -93,7 +93,7 @@ export const Header = () => {
             className="text-slate-400 hover:text-white"
             title="Export Dashboard"
           >
-            <Settings className="h-4 w-4" />
+            <Download className="h-4 w-4" />
           </Button>
         </div>
       </div>
