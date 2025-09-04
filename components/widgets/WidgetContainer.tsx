@@ -58,7 +58,7 @@ export const WidgetContainer = ({
   };
 
   return (
-    <div className="bg-card rounded-lg border border-border overflow-hidden hover:border-muted-foreground/20 transition-colors group">
+    <div className="bg-card rounded-lg border border-border overflow-hidden hover:border-muted-foreground/20 transition-colors group min-h-[400px]">
       <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex-1">
           <h3 className="text-foreground font-medium">{title}</h3>
@@ -143,7 +143,7 @@ export const WidgetContainer = ({
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="p-6">
         {loading && (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin w-8 h-8 border border-muted border-t-primary rounded-full"></div>

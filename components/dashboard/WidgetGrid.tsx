@@ -34,10 +34,10 @@ export const WidgetGrid = () => {
   if (!mounted) {
     return (
       <div className="flex-1 p-4 md:p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {/* Loading skeleton */}
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-muted rounded-lg h-64 animate-pulse"></div>
+            <div key={i} className="bg-muted rounded-lg h-96 animate-pulse"></div>
           ))}
         </div>
       </div>
@@ -75,7 +75,7 @@ export const WidgetGrid = () => {
             <div
               {...provided.droppableProps}
               ref={provided.innerRef}
-              className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6"
+              className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
             >
               {widgets
                 .sort((a, b) => a.position - b.position)
