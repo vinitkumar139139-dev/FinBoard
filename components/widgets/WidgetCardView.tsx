@@ -2,14 +2,17 @@
 
 import { useMemo } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Activity } from 'lucide-react';
+import { formatValue } from '@/lib/formatters';
+import { FieldFormat } from '@/stores/dashboardStore';
 
 interface WidgetCardViewProps {
   data: any;
   fields: string[];
   title: string;
+  fieldFormats?: Record<string, FieldFormat>;
 }
 
-export const WidgetCardView = ({ data, fields, title }: WidgetCardViewProps) => {
+export const WidgetCardView = ({ data, fields, title, fieldFormats }: WidgetCardViewProps) => {
   const cardData = useMemo(() => {
     if (!data) return [];
 
@@ -17,7 +20,17 @@ export const WidgetCardView = ({ data, fields, title }: WidgetCardViewProps) => 
       return path.split('.').reduce((curr, key) => curr?.[key], obj);
     };
 
-    const formatValue = (value: any, field: string): { value: string; isNumeric: boolean; isPercentage: boolean } => {
+    const formatDisplayValue = (value: any, field: string): { value: string; isNumeric: boolean; isPercentage: boolean } => {
+      // Use custom formatting if available
+      const format = fieldFormats?.[field];
+      if (format) {
+        return {
+          value: formatValue(value, format),
+          isNumeric: format.type === 'number' || format.type === 'currency',
+          isPercentage: format.type === 'percentage'
+        };
+      }
+      
       if (typeof value === 'number') {
         const isPercentage = field.toLowerCase().includes('percent') || field.toLowerCase().includes('change');
         return {
@@ -93,7 +106,7 @@ export const WidgetCardView = ({ data, fields, title }: WidgetCardViewProps) => 
         value = getValue(sourceData, field);
       }
       
-      const formatted = formatValue(value, field);
+      const formatted = formatDisplayValue(value, field);
       return {
         label: formatLabel(field),
         ...formatted,

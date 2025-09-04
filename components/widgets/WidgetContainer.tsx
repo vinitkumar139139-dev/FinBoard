@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode, useState } from 'react';
-import { X, MoreVertical, RefreshCw, Settings, AlertCircle } from 'lucide-react';
+import { X, MoreVertical, RefreshCw, Settings, AlertCircle, Globe, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useDashboardStore } from '@/stores/dashboardStore';
 import { useApiData } from '@/hooks/useApiData';
@@ -9,24 +9,30 @@ import { useApiData } from '@/hooks/useApiData';
 interface WidgetContainerProps {
   id: string;
   title: string;
+  description?: string;
   children: ReactNode;
   loading?: boolean;
   error?: string | null;
   lastUpdated?: Date;
   apiUrl?: string;
+  apiEndpoints?: Array<{ name: string; url: string; description?: string }>;
+  currentEndpointIndex?: number;
 }
 
 export const WidgetContainer = ({ 
   id, 
   title, 
+  description,
   children, 
   loading = false, 
   error = null,
   lastUpdated,
-  apiUrl
+  apiUrl,
+  apiEndpoints,
+  currentEndpointIndex
 }: WidgetContainerProps) => {
   const [showMenu, setShowMenu] = useState(false);
-  const { removeWidget } = useDashboardStore();
+  const { removeWidget, switchWidgetEndpoint } = useDashboardStore();
   const { refreshWidget } = useApiData();
 
   const handleRefresh = () => {
@@ -56,6 +62,9 @@ export const WidgetContainer = ({
       <div className="flex items-center justify-between p-4 border-b border-slate-700">
         <div className="flex-1">
           <h3 className="text-white font-medium">{title}</h3>
+          {description && (
+            <p className="text-xs text-slate-400 mt-1">{description}</p>
+          )}
           {lastUpdated && (
             <p className="text-xs text-slate-500 mt-1">
               Updated {formatLastUpdated()}
@@ -87,7 +96,7 @@ export const WidgetContainer = ({
             </Button>
             
             {showMenu && (
-              <div className="absolute right-0 top-8 bg-slate-800 border border-slate-700 rounded-md py-1 min-w-[120px] z-10">
+              <div className="absolute right-0 top-8 bg-slate-800 border border-slate-700 rounded-md py-1 min-w-[180px] z-10">
                 <button
                   onClick={handleRefresh}
                   className="w-full text-left px-3 py-2 text-sm text-slate-300 hover:bg-slate-700 flex items-center"
@@ -95,9 +104,35 @@ export const WidgetContainer = ({
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Refresh
                 </button>
+                
+                {apiEndpoints && apiEndpoints.length > 1 && (
+                  <>
+                    <div className="px-3 py-1 text-xs text-slate-500 border-t border-slate-700 mt-1">
+                      Switch Endpoint
+                    </div>
+                    {apiEndpoints.map((endpoint, index) => (
+                      <button
+                        key={index}
+                        onClick={() => switchWidgetEndpoint(id, index)}
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-slate-700 flex items-center ${
+                          index === currentEndpointIndex ? 'text-blue-400' : 'text-slate-300'
+                        }`}
+                      >
+                        <Globe className="h-4 w-4 mr-2" />
+                        <div>
+                          <div className="font-medium">{endpoint.name}</div>
+                          {endpoint.description && (
+                            <div className="text-xs text-slate-500">{endpoint.description}</div>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </>
+                )}
+                
                 <button
                   onClick={handleDelete}
-                  className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-slate-700 flex items-center"
+                  className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-slate-700 flex items-center border-t border-slate-700 mt-1"
                 >
                   <X className="h-4 w-4 mr-2" />
                   Delete

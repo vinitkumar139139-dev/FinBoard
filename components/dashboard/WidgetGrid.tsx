@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Button } from '@/components/ui/button';
@@ -93,16 +93,20 @@ export const WidgetGrid = () => {
                         <WidgetContainer
                           id={widget.id}
                           title={widget.title}
+                          description={widget.description}
                           loading={widget.loading}
                           error={widget.error}
                           lastUpdated={widget.lastUpdated}
                           apiUrl={widget.apiUrl}
+                          apiEndpoints={widget.apiEndpoints}
+                          currentEndpointIndex={widget.currentEndpointIndex}
                         >
                           {widget.displayMode === 'card' ? (
                             <WidgetCardView
                               data={widget.data}
                               fields={widget.fields}
                               title={widget.title}
+                              fieldFormats={widget.fieldFormats}
                             />
                           ) : widget.displayMode === 'chart' ? (
                             <>
@@ -127,6 +131,7 @@ export const WidgetGrid = () => {
                               data={widget.data}
                               fields={widget.fields}
                               title={widget.title}
+                              fieldFormats={widget.fieldFormats}
                               displayMode={widget.displayMode}
                             />
                           )}

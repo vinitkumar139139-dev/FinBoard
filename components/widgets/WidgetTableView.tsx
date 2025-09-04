@@ -2,15 +2,18 @@
 
 import { useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { formatValue } from '@/lib/formatters';
+import { FieldFormat } from '@/stores/dashboardStore';
 
 interface WidgetTableViewProps {
   data: any;
   fields: string[];
   title: string;
+  fieldFormats?: Record<string, FieldFormat>;
   displayMode?: 'card' | 'table' | 'chart';
 }
 
-export const WidgetTableView = ({ data, fields, title, displayMode = 'table' }: WidgetTableViewProps) => {
+export const WidgetTableView = ({ data, fields, title, fieldFormats, displayMode = 'table' }: WidgetTableViewProps) => {
   const tableData = useMemo(() => {
     if (!data) return [];
 
@@ -70,6 +73,12 @@ export const WidgetTableView = ({ data, fields, title, displayMode = 'table' }: 
     } else {
       // Handle regular dot notation
       value = path.split('.').reduce((curr, key) => curr?.[key], obj);
+    }
+    
+    // Use custom formatting if available
+    const format = fieldFormats?.[path];
+    if (format) {
+      return formatValue(value, format);
     }
     
     if (typeof value === 'number') {

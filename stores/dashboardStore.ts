@@ -1,13 +1,26 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+export interface FieldFormat {
+  type: 'currency' | 'percentage' | 'number' | 'date' | 'text';
+  decimals?: number;
+  currency?: string;
+  dateFormat?: string;
+  prefix?: string;
+  suffix?: string;
+}
+
 export interface Widget {
   id: string;
   title: string;
+  description?: string;
   apiUrl: string;
+  apiEndpoints?: Array<{ name: string; url: string; description?: string }>;
+  currentEndpointIndex?: number;
   apiHeaders?: Record<string, string>;
   refreshInterval: number; // in seconds
   fields: string[];
+  fieldFormats?: Record<string, FieldFormat>;
   displayMode: 'card' | 'table' | 'chart';
   chartType?: 'line' | 'candlestick' | 'performance';
   timeInterval?: 'daily' | 'weekly' | 'monthly';
@@ -23,6 +36,7 @@ interface DashboardStore {
   addWidget: (widget: Omit<Widget, 'id' | 'data' | 'loading' | 'error' | 'position'>) => void;
   removeWidget: (id: string) => void;
   updateWidget: (id: string, updates: Partial<Widget>) => void;
+  switchWidgetEndpoint: (id: string, endpointIndex: number) => void;
   reorderWidgets: (widgets: Widget[]) => void;
   setWidgetData: (id: string, data: any, error?: string | null) => void;
   setWidgetLoading: (id: string, loading: boolean) => void;
@@ -60,6 +74,22 @@ export const useDashboardStore = create<DashboardStore>()(
         )
       })),
       
+      switchWidgetEndpoint: (id, endpointIndex) => set((state) => ({
+        widgets: state.widgets.map(w => {
+          if (w.id === id && w.apiEndpoints && w.apiEndpoints[endpointIndex]) {
+            return {
+              ...w,
+              currentEndpointIndex: endpointIndex,
+              apiUrl: w.apiEndpoints[endpointIndex].url,
+              data: null,
+              error: null,
+              loading: false
+            };
+          }
+          return w;
+        })
+      })),
+      
       reorderWidgets: (widgets) => set(() => ({
         widgets: widgets.map((w, index) => ({ ...w, position: index }))
       })),
@@ -81,14 +111,18 @@ export const useDashboardStore = create<DashboardStore>()(
       exportDashboard: () => {
         const state = get();
         const exportData = {
-          version: '1.0',
+          version: '2.0',
           timestamp: new Date().toISOString(),
           widgets: state.widgets.map(w => ({
             title: w.title,
+            description: w.description,
             apiUrl: w.apiUrl,
+            apiEndpoints: w.apiEndpoints,
+            currentEndpointIndex: w.currentEndpointIndex,
             apiHeaders: w.apiHeaders,
             refreshInterval: w.refreshInterval,
             fields: w.fields,
+            fieldFormats: w.fieldFormats,
             displayMode: w.displayMode,
             chartType: w.chartType,
             timeInterval: w.timeInterval,
