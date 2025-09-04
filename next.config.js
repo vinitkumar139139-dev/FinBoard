@@ -17,6 +17,14 @@ const nextConfig = {
       },
     ];
   },
+  // Allow all hosts for Replit proxy compatibility
+  experimental: {
+    allowedRevalidateHeaderKeys: ['*'],
+  },
+  // Ensure proper host handling for Replit environment
+  async rewrites() {
+    return [];
+  },
 };
 
 module.exports = nextConfig;
