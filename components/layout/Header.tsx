@@ -24,17 +24,17 @@ export const Header = () => {
     setCurrentTime(new Date().toLocaleTimeString());
   }, []);
   return (
-    <header className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between">
+    <header className="bg-card border-b border-border px-6 py-4 flex items-center justify-between">
       <div className="flex items-center space-x-4">
         <div>
-          <h1 className="text-xl font-bold text-white">My Trading Dashboard</h1>
+          <h1 className="text-xl font-bold text-foreground">My Trading Dashboard</h1>
           <div className="flex items-center space-x-4 mt-1">
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm text-slate-400">Live Data</span>
+              <span className="text-sm text-muted-foreground">Live Data</span>
             </div>
             {currentTime && (
-              <span className="text-sm text-slate-500">
+              <span className="text-sm text-muted-foreground">
                 Updated {currentTime}
               </span>
             )}
@@ -48,7 +48,7 @@ export const Header = () => {
           size="sm"
           onClick={handleRefreshAll}
           disabled={widgets.length === 0}
-          className="bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
+          className="bg-secondary border-border text-secondary-foreground hover:bg-secondary/80"
         >
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh All
@@ -68,12 +68,12 @@ export const Header = () => {
             variant="ghost" 
             size="sm" 
             onClick={toggleTheme}
-            className="text-slate-400 hover:text-white"
+            className="text-muted-foreground hover:text-foreground"
             title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
           >
             {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
-          <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
+          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
             <Bell className="h-4 w-4" />
           </Button>
           <Button 
@@ -90,7 +90,7 @@ export const Header = () => {
               a.click();
               URL.revokeObjectURL(url);
             }}
-            className="text-slate-400 hover:text-white"
+            className="text-muted-foreground hover:text-foreground"
             title="Export Dashboard"
           >
             <Download className="h-4 w-4" />

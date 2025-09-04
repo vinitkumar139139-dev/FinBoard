@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Plus, BarChart3, TrendingUp, DollarSign, Activity, PieChart, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AddWidgetModal } from '@/components/widgets/AddWidgetModal';
+import { useDashboardStore } from '@/stores/dashboardStore';
 
 const widgetCategories = [
   {
